@@ -15,7 +15,7 @@
 #define RAIN_BOOT 2
 
 #define INTERRUPT_PIN 5
-#define SLEEP_INTERVAL (1UL * 1UL * 1000000ULL)
+#define SLEEP_INTERVAL (5UL * 60UL * 1000000ULL)
 
 class PowerController {
 

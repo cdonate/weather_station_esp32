@@ -4,8 +4,10 @@
 
 #include "PowerController.h"
 #include "ConnectionController.h"
+#include "SensorController.h"
 
 ConnectionController connection;
+SensorController sensor;
 
 
 RTC_DATA_ATTR int bootReason = 0;
@@ -26,7 +28,7 @@ void PowerController::sleep() {
     log_i("Going to sleep\n");
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_ON);
     connection.stop_connections();
-    
+    sensor.sleep();
     esp_deep_sleep_start();
 }
 

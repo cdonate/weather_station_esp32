@@ -7,9 +7,9 @@
 #include "SPIFFS.h"
 
 BME280 BME280Sensor;
-// HTU21D HTU21DSensor;
 
 RTC_DATA_ATTR int pluviometerCnt = 0;
+BME280_SensorMeasurements measurements;
 
 SensorController::SensorController()
 {
@@ -17,31 +17,35 @@ SensorController::SensorController()
 }
 
 void SensorController::begin() {
-    // BME280Sensor.setI2CAddress(SENSOR_ADDR);
-
     BME280Sensor.beginI2C();
-
-    BME280Sensor.setFilter(FILTER_OFF);
+    BME280Sensor.setFilter(IIR_FILTER);
     BME280Sensor.setStandbyTime(SAMPLING_FREQUENCY);
 
     BME280Sensor.setTempOverSample(TEMPERATURE_OVERSAMPLING);
     BME280Sensor.setPressureOverSample(HUMIDITY_OVERSAMPLING);
     BME280Sensor.setHumidityOverSample(PESSURE_OVERSAMPLING);
+
+    BME280Sensor.setMode(MODE_NORMAL);
+}
+
+void SensorController::sleep(){
+    log_i("Sensor to MODE_SLEEP\n");
     BME280Sensor.setMode(MODE_SLEEP);
 }
 
 void SensorController::get_weather_data(float weather_data[]) {
     log_i("Reading sensor data\n");
-    
-    float temp = BME280Sensor.readTempC();// HTU21DSensor.readTemperature();
-    float humd = BME280Sensor.readFloatHumidity(); //HTU21DSensor.readHumidity();
-    float pres = BME280Sensor.readFloatPressure();
-    float pluv = pluviometerCnt;
 
-    weather_data[0] = temp;
-    weather_data[1] = humd;
-    weather_data[2] = pres;
-    weather_data[3] = pluv;
+    while (BME280Sensor.isMeasuring()){
+        Serial.println("Wainting for measurement to be ready...\n");
+    };
+    
+    BME280Sensor.readAllMeasurements(&measurements);
+
+    weather_data[0] = measurements.temperature;
+    weather_data[1] = measurements.humidity;
+    weather_data[2] = measurements.pressure;
+    weather_data[3] = pluviometerCnt;
 
     clear_pluviometer_counter();
 
@@ -59,17 +63,21 @@ void SensorController::clear_pluviometer_counter() {
     pluviometerCnt = 0;
 }
 
+void SensorController::debug_weather_data() {
+    unsigned long start = micros();
+    while (BME280Sensor.isMeasuring()){
+        Serial.println("Wainting for measurement to be ready...");
+    };
+    Serial.printf("Time waiting: %lu\n",micros() - start);
+    start = micros();
+    BME280Sensor.readAllMeasurements(&measurements);
+    Serial.printf("Time for burst: %lu\n",micros() - start);
+    Serial.printf("From Burst: %.2f,%.2f,%.2f\n", measurements.temperature, measurements.humidity, measurements.pressure);
 
-void SensorController::print_weather_data() {
-    // Serial.printf("Reading sensor data\n");
-    // BME280Sensor.beginI2C();
-    // BME280Sensor.setFilter(2);
-    // BME280Sensor.setMode(MODE_FORCED);
-
-    Serial.printf("%.2f,%.2f,%.2f\n", BME280Sensor.readTempC(), BME280Sensor.readFloatHumidity(), BME280Sensor.readFloatPressure());
-}
-
-void SensorController::test(){
-    Serial.printf("Config: %d\n",BME280Sensor.readRegister(BME280_CONFIG_REG));
-    Serial.printf("Mode: %d\n",BME280Sensor.getMode());
+    start = micros();
+    float temp = BME280Sensor.readTempC();
+    float humid = BME280Sensor.readFloatHumidity();
+    float press = BME280Sensor.readFloatPressure();
+    Serial.printf("Time for single: %lu\n",micros() - start);
+    Serial.printf("From single: %.2f,%.2f,%.2f\n", temp, humid, press);
 }

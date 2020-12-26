@@ -19,12 +19,15 @@
 // #define FILTER_OFF 0
 // #define SAMPLING_FREQUENCY 5 // 1000ms
 
-#define TEMPERATURE_OVERSAMPLING 16
-#define HUMIDITY_OVERSAMPLING 16
-#define PESSURE_OVERSAMPLING 16
+#define TEMPERATURE_OVERSAMPLING 4
+#define HUMIDITY_OVERSAMPLING 4
+#define PESSURE_OVERSAMPLING 4
 
-#define FILTER_OFF 2
-#define SAMPLING_FREQUENCY 1 // 1000ms
+#define FILTER_OFF 0
+#define IIR_FILTER 2
+#define SAMPLING_FREQUENCY 6 // 10ms
+
+#define SPI_DISABLED 0
 
 
 class SensorController {
@@ -36,8 +39,8 @@ public:
 	void begin(void);
 	void get_weather_data(float[]);
 	void save_pluviometer_data();
-	void test();
-	void print_weather_data();
+	void sleep();
+	void debug_weather_data();
 	//Public Variables
 
 private:
