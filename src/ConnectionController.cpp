@@ -5,13 +5,15 @@
 #include <Wifi.h>
 #include <HTTPClient.h>
 
+#define IOT_ID 1
+
 HTTPClient http;
 
 const char* ssid = "CPD";
 const char* password = "98849884";
 byte bssid[] = { 0xc0, 0x3d, 0xd9, 0x07, 0x7f, 0x60 };
 
-const char* host = "192.168.15.167";
+const char* host = "192.168.15.200";
 const char* device = "ESP32 - Weather Station";
 const int port = 8080;
 
@@ -42,26 +44,27 @@ bool ConnectionController::connect() {
 bool ConnectionController::send_data(String csvData) {
     log_i("Sending data\n");
 
+    char url[20];
+    snprintf(url, sizeof(url), "/api/iot/%d/weather", IOT_ID);
+    
     bool result = false;
 
     delayfor(100);
 
-    http.begin(host, port, "/api/weather-station");
     http.setTimeout(10000);
+    http.begin(host, port, url);
 
     delayfor(100);
     
-    http.addHeader("content-type", "text/plain charset=utf-8");
+    http.addHeader("content-type", "text/csv");
 
     int httpCode = http.POST(csvData);
 
-    delayfor(100);
+    http.end();
 
-
-    if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_CREATED) {
+    if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_NO_CONTENT) {
         result = true;
     }
-    http.end();
     
     log_d("Response code: %d\n", httpCode);
     return result;

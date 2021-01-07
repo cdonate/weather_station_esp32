@@ -12,7 +12,7 @@
 
 #endif
 
-#define WIFI_TIMEOUT 10000 // 10 seconds in milliseconds
+#define WIFI_TIMEOUT 20000 // 20 seconds in milliseconds
 
 class ConnectionController {
 

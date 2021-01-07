@@ -35,7 +35,7 @@ void MemoryController::save(float weather_data[]) {
 String MemoryController::get_data() {
     log_i("Reading memory\n");
     File sensorDataFile = SPIFFS.open("/data", FILE_READ);
-    String CSVData = "";
+    String CSVData = "temperature,humidity,pressure,rainfall\n";
     
     while(sensorDataFile.available()){
         sensorDataFile.read((byte *)&sensorData, sizeof(sensorData));
